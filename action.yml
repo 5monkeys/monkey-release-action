@@ -1,8 +1,37 @@
-name: Monkey Release Action
+name: 'monkey-release'
 description: Validate and handle releases
+inputs:
+  repo_token:
+    description: 'The GITHUB_TOKEN for this repo'
+    required: true
+  base_branch:
+    description: 'Name of the base branch'
+    required: true
+    default: 'master'
+  head_branch:
+    description: 'Name of the head branch'
+    required: true
+    default: 'dev'
+  release_pattern:
+    description: |
+      'Pattern to validate title against.
+       If it contains any of the named capture groups <year>, <month>, <day> calver validation will occur.'
+    required: true
+    default: '^(?<year>[0-9]{4})\.(?<month>[0-9]{2})\.(?<day>[0-9]{2})-\d$'
+  tag_prefix:
+    description: 'Prefix to use when tagging release'
+    required: true
+    default: 'release/'
+  approve_releases:
+    description: 'If release reviews should be approved or just commented upon'
+    required: true
+    default: true
+  release_label:
+    description: "Label to add to release PR."
+    default: "release"
+outputs:
+  release:
+    description: "Name of release"
 runs:
-  using: docker
-  image: Dockerfile
-branding:
-  icon: truck
-  color: green
+  using: 'node12'
+  main: 'index.js'
