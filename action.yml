@@ -1,0 +1,8 @@
+name: Monkey Release Action
+description: Validate and handle releases
+runs:
+  using: docker
+  image: Dockerfile
+branding:
+  icon: truck
+  color: green
