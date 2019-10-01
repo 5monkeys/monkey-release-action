@@ -14,16 +14,20 @@ async function action() {
   }
   const validateActions = ["opened", "edited", "reopened"];
   if (validateActions.includes(action)) {
+    // Run validation for accepted actions
     core.info(`Validating pull request for action ${action}.`);
     await validate(pullRequest);
   } else if (action === "closed" && pullRequest.merged) {
+    // Previously validated PR was merged so create release
     core.info(`Creating release.`);
     await release(pullRequest);
   } else {
+    // Invalid action
     core.info(`Skipping since ${action} is not handled by this action.`);
     return;
   }
   core.info(`Finished running. Returning release ${pullRequest.title}`);
+  // Set output to release name
   core.setOutput("release", pullRequest.title);
 }
 
@@ -58,6 +62,7 @@ function validateTitle(pullRequest) {
     `Validating title ${pullRequest.title} against pattern ${releasePattern}`
   );
 
+  // Run pull request title against defined pattern
   const regExp = new RegExp(releasePattern);
   const match = regExp.exec(pullRequest.title);
   if (!match) {
@@ -68,6 +73,7 @@ function validateTitle(pullRequest) {
   const { year, month, day } = match.groups || {};
   const today = new Date();
 
+  // Check year
   if (
     releasePattern.includes("<year>") &&
     today.getUTCFullYear() !== Number(year)
@@ -76,6 +82,8 @@ function validateTitle(pullRequest) {
       `${year} is not a valid year. Current is ${today.getUTCFullYear()}.`
     );
   }
+
+  // Check month
   if (
     releasePattern.includes("<month>") &&
     today.getUTCMonth() + 1 !== Number(month)
@@ -84,6 +92,8 @@ function validateTitle(pullRequest) {
       `${month} is not a valid month. Current is ${today.getUTCMonth() + 1}.`
     );
   }
+
+  // Check day
   if (releasePattern.includes("<day>") && today.getUTCDate() !== Number(day)) {
     throw new ValidationError(
       `${day} is not a valid day. Current is ${today.getUTCDate()}.`
@@ -121,6 +131,7 @@ function validateBranches(pullRequest) {
 async function validateRelease(pullRequest) {
   core.info("Validating release..");
   const tag = getTagName(pullRequest);
+  // Check that current release tag returns 404 to ensure no duplicate releases
   try {
     await client.repos.getReleaseByTag({
       tag: tag,
@@ -147,6 +158,7 @@ async function addLabel(pullRequest) {
   if (!releaseLabel) {
     return;
   }
+  // Add label is it is not already present on PR
   core.info(`Adding label ${releaseLabel}..`);
   if (pullRequest.labels && pullRequest.labels.includes(releaseLabel)) {
     return;
