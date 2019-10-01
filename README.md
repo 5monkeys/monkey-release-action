@@ -5,6 +5,7 @@
 Validates a pull request intended for creating a [GitHub Release](https://developer.github.com/v3/repos/releases/#create-a-release). When merged the action will then create the release.
 
 ## The action flow
+
 * Trigger on [PullRequestEvent](https://developer.github.com/v3/activity/events/types/#pullrequestevent) with type `opened`, `edited` or  `reopened`.
     * Add a label defined by `release_label` to the PR.
     * Validate title.
@@ -52,7 +53,7 @@ Sets if a PR should just be commented upon or approved and request changes depen
 
 ### `release_label`
 
-The label to add to the release PR. Set to and empty string to disable. Defaults to `release`.
+The label to add to the release PR. Set to an empty string to disable. Defaults to `release`.
 
 **Note**: Make sure that the label exists.
 
