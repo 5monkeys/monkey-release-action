@@ -14,7 +14,7 @@ async function action() {
   }
   const validateActions = ["opened", "edited", "reopened"];
   if (validateActions.includes(action)) {
-    core.info(`Validating pull request.`);
+    core.info(`Validating pull request for action ${action}.`);
     await validate(pullRequest);
   } else if (action === "closed" && pullRequest.merged) {
     core.info(`Creating release.`);
@@ -23,7 +23,7 @@ async function action() {
     core.info(`Skipping since ${action} is not handled by this action.`);
     return;
   }
-  core.info(`Finished running.`);
+  core.info(`Finished running. Returning release ${pullRequest.title}`);
   core.setOutput("release", pullRequest.title);
 }
 
@@ -41,6 +41,7 @@ async function validate(pullRequest) {
     await validateRelease(pullRequest);
   } catch (error) {
     if (error.name === "ValidationError") {
+      core.error("Failed validation.");
       // Review if error is a ValidationError
       await review(pullRequest, getReviewFailEvent(), error.message);
     }
@@ -53,7 +54,9 @@ async function validate(pullRequest) {
 
 function validateTitle(pullRequest) {
   const releasePattern = core.getInput("release_pattern", { required: true });
-  core.info(`Validating title with pattern [${releasePattern}]..`);
+  core.info(
+    `Validating title ${pullRequest.title} against pattern ${releasePattern}`
+  );
 
   const regExp = new RegExp(releasePattern);
   const match = regExp.exec(pullRequest.title);
@@ -144,7 +147,7 @@ async function addLabel(pullRequest) {
   if (!releaseLabel) {
     return;
   }
-  core.info("Adding label..");
+  core.info(`Adding label ${releaseLabel}..`);
   if (pullRequest.labels && pullRequest.labels.includes(releaseLabel)) {
     return;
   }
@@ -175,7 +178,7 @@ const REVIEW_COMMENT = "COMMENT";
 const REVIEW_REQUEST_CHANGES = "REQUEST_CHANGES";
 
 async function review(pullRequest, event, comment) {
-  core.info("Reviewing..");
+  core.info(`Reviewing ${pullRequest.number}..`);
   await client.pulls.createReview({
     pull_number: pullRequest.number,
     body: comment,
@@ -185,7 +188,7 @@ async function review(pullRequest, event, comment) {
 }
 
 async function release(pullRequest) {
-  core.info("Releasing..");
+  core.info(`Releasing ${pullRequest.merge_commit_sha}..`);
   const tag = getTagName(pullRequest);
   await client.repos.createRelease({
     name: pullRequest.title,
