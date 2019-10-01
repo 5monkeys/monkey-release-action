@@ -1,11 +1,22 @@
 {
   "name": "monkey-release-action",
   "private": true,
+  "description": "GitHub Action to validate and create GitHub Releases from pull requests",
   "main": "index.js",
   "scripts": {
     "start": "node ./index.js",
-    "test": "jest --collectCoverage"
+    "test": "jest --collectCoverage",
+    "lint": "eslint ."
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/5monkeys/monkey-release-action.git"
+  },
+  "keywords": [
+    "github",
+    "actions"
+  ],
+  "license": "MIT",
   "dependencies": {
     "@actions/core": "^1.1.1",
     "@actions/github": "^1.1.0",
