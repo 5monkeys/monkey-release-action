@@ -1,5 +1,7 @@
 # Monkey Release Action
 
+![](https://github.com/5m/monkey-release-action/workflows/Test/badge.svg)
+
 Validates a pull request intended for creating a [GitHub Release](https://developer.github.com/v3/repos/releases/#create-a-release). When merged the action will then create the release.
 
 ## The action flow
