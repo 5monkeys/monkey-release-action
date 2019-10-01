@@ -1,17 +1,17 @@
-# Validate and create Releases
+# Monkey Release Action
 
 Validates that PR has a valid title and body for creating a [GitHub Release](https://developer.github.com/v3/repos/releases/#create-a-release).
 
 When this action is trigged on a [PullRequestEvent](https://developer.github.com/v3/activity/events/types/#pullrequestevent) with action `opened`, `edited` and  `reopened` validation will be ran.
-When triggered on `closed` and the PullRequest is `merged` a [GitHub Release](https://developer.github.com/v3/repos/releases/#create-a-release) with the title and body of the PR will be created.
 
+When triggered on `closed` and the PullRequest is `merged` a [GitHub Release](https://developer.github.com/v3/repos/releases/#create-a-release) with the title and body of the PR will be created.
 
 
 ## Inputs
 
-### `repo_token`
+### `repo_token` **Required** 
 
-**Required** The GITHUB_TOKEN.
+The GITHUB_TOKEN.
 
 ### `base_branch`
 
@@ -39,7 +39,7 @@ Sets if a PR should just be commented upon or approved and request changes depen
 
 The label to add to the release PR. Set to and empty string to disable. Defaults to `release`.
 
-**Note** Make sure that the label exists.
+**Note**: Make sure that the label exists.
 
 ## Outputs
 
