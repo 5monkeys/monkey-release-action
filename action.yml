@@ -27,11 +27,11 @@ inputs:
     required: true
     default: true
   release_label:
-    description: "Label to add to release PR."
-    default: "release"
+    description: 'Label to add to release PR.'
+    default: 'release'
 outputs:
   release:
-    description: "Name of release"
+    description: 'Name of release'
 runs:
   using: 'node12'
   main: 'index.js'
