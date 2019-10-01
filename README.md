@@ -2,9 +2,21 @@
 
 Validates that PR has a valid title and body for creating a [GitHub Release](https://developer.github.com/v3/repos/releases/#create-a-release).
 
-When this action is trigged on a [PullRequestEvent](https://developer.github.com/v3/activity/events/types/#pullrequestevent) with action `opened`, `edited` and  `reopened` validation will be ran.
+When this action is trigged on a [PullRequestEvent](https://developer.github.com/v3/activity/events/types/#pullrequestevent) with type `opened`, `edited` or  `reopened` validation will be ran.
 
-When triggered on `closed` and the PullRequest is `merged` a [GitHub Release](https://developer.github.com/v3/repos/releases/#create-a-release) with the title and body of the PR will be created.
+## The action flow
+
+* Add a label defined by `release_label` to the PR.
+* Validate title.
+    * Checks that the PR title matches the defined `release_pattern`.
+    * If `release_pattern` is a [Calver](https://www.google.com/search?client=safari&rls=en&q=Calver&ie=UTF-8&oe=UTF-8) containing named capture groups `<year>`, `<month>` and/or `<day>` 
+    it will check that the current date matches.
+    * Check that a release with the same title does not already exist.
+* Validate that the PR body is not empty.
+* Validates that the PR is from an allowed branch defined by `head_branch`.
+* If above checks fails it will review the PR and request changes.
+* If above checks passes it will approve the PR.
+* When PR is merged into `base_branch` a [GitHub Release](https://developer.github.com/v3/repos/releases/#create-a-release) is created with the title and body of the PR. 
 
 
 ## Inputs
@@ -25,7 +37,7 @@ The branch which the release PR originates from. Defaults to `dev`.
 
 The pattern to validate the PR title against. If it contains any of the named capture groups `<year>`, `<month>` and/or `<day>` Calver validation will occur to ensure that the date is current.
 
-Defaults to `/^(?<year>[0-9]{4})\.(?<month>[0-9]{2})\.(?<day>[0-9]{2})-\d$/`.
+Defaults to `^(?<year>[0-9]{4})\.(?<month>[0-9]{2})\.(?<day>[0-9]{2})-\d$`.
 
 ### `tag_prefix`
 
