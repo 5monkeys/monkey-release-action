@@ -75,7 +75,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: 5monkeys/monkey-release@master
+      - uses: 5monkeys/monkey-release-action@master
         id: release
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
