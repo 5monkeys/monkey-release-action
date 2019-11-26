@@ -55,7 +55,17 @@ Sets if a PR should just be commented upon or approved and request changes depen
 
 The label to add to the release PR. Set to an empty string to disable. Defaults to `release`.
 
-**Note**: Make sure that the label exists.
+
+### `create_status`
+
+Sets if a [GitHub status](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/about-status-checks) should
+be created by the action. This is useful when wanting to restrict merging until the action runs successfully. Since GitHub creates a
+check on the PR for every PR event that triggers the action isn't useful to restrict merging by the action checks. Instead use this status specified by `status_name`.
+Defaults to `true`. 
+
+### `status_name`
+
+The name of the status created when `create_status` is set to `true`. Defaults to `Monkey Release`.
 
 ## Outputs
 

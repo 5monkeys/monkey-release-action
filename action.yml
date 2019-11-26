@@ -12,6 +12,14 @@ inputs:
     description: 'Name of the head branch'
     required: true
     default: 'dev'
+  create_status:
+    description: 'If the action state should be created as a status'
+    required: true
+    default: true
+  status_name:
+    description: 'Name of the status created by this action'
+    required: true
+    default: 'Monkey Release'
   release_pattern:
     description: |
       'Pattern to validate title against.
