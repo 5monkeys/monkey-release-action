@@ -19,22 +19,27 @@ test("validate", async () => {
   process.env["INPUT_HEAD_BRANCH"] = "dev";
   process.env["INPUT_RELEASE_LABEL"] = "Release";
   process.env["INPUT_TAG_PREFIX"] = "release/";
+  process.env["INPUT_CREATE_STATUS"] = "true";
+  process.env["INPUT_STATUS_NAME"] = "Monkey Release";
   const currentDate = moment.utc(new Date()).format("YYYY.MM.DD-1");
   const prNumber = "1";
   const tag = `release/${currentDate}`;
+  const headSha = "deadbeef";
   const pullRequest = {
     number: prNumber,
     title: currentDate,
     body: "mybody",
     labels: [],
     base: { ref: "master" },
-    head: { ref: "dev" }
+    head: { ref: "dev", sha: headSha }
   };
   nock("https://api.github.com")
     .persist()
     .post(`/repos/${owner}/${repo}/issues/${prNumber}/labels`)
     .reply(200)
     .post(`/repos/${owner}/${repo}/pulls/${prNumber}/reviews`)
+    .reply(200)
+    .post(`/repos/${owner}/${repo}/statuses/${headSha}`)
     .reply(200)
     .get(`/repos/${owner}/${repo}/releases/tags/${tag}`)
     .reply(404);
@@ -90,11 +95,17 @@ test("addLabel", async () => {
 
 test("review", async () => {
   const { review } = require("./action");
+
+  process.env["INPUT_CREATE_STATUS"] = "true";
+  process.env["INPUT_STATUS_NAME"] = "Monkey Release";
   const prNumber = "5";
+  const headSha = "deadbeef";
   nock("https://api.github.com")
     .post(`/repos/${owner}/${repo}/pulls/${prNumber}/reviews`)
+    .reply(200)
+    .post(`/repos/${owner}/${repo}/statuses/${headSha}`)
     .reply(200);
-  await review({ number: prNumber }, "APPROVE", "LGTM");
+  await review({ number: prNumber, head: { sha: headSha } }, "APPROVE", "LGTM");
 });
 
 test("release", async () => {
@@ -231,4 +242,18 @@ test("validateRelease", async () => {
     .get(`/repos/${owner}/${repo}/releases/tags/${tag}`)
     .reply(500);
   await expect(validateRelease({ title: "hejhej" })).rejects.toThrow(Error);
+});
+
+test("setStatus", async () => {
+  const { setStatus } = require("./action");
+
+  process.env["INPUT_CREATE_STATUS"] = "true";
+  process.env["INPUT_STATUS_NAME"] = "Monkey Release";
+  const headSha = "deadbeef";
+  nock("https://api.github.com")
+    .post(`/repos/${owner}/${repo}/statuses/${headSha}`)
+    .reply(200);
+  await setStatus({ head: { sha: headSha } }, "success", "LGTM");
+  process.env["INPUT_CREATE_STATUS"] = "false";
+  await setStatus({ head: { sha: headSha } }, "success", "LGTM");
 });

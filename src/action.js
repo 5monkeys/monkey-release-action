@@ -163,7 +163,6 @@ async function addLabel(pullRequest) {
   if (pullRequest.labels && pullRequest.labels.includes(releaseLabel)) {
     return;
   }
-  // TODO: Handle missing label?
   await client.issues.addLabels({
     issue_number: pullRequest.number,
     labels: [releaseLabel],
@@ -195,6 +194,34 @@ async function review(pullRequest, event, comment) {
     pull_number: pullRequest.number,
     body: comment,
     event: event,
+    ...github.context.repo
+  });
+  // Set status on commit
+  await setStatus(
+    pullRequest,
+    event === REVIEW_APPROVE ? STATUS_SUCCESS : STATUS_FAILURE,
+    comment
+  );
+}
+
+const STATUS_FAILURE = "failure";
+const STATUS_SUCCESS = "success";
+
+async function setStatus(pullRequest, state, description) {
+  core.info(`Setting status ${state}..`);
+  const createStatus = JSON.parse(
+    core.getInput("create_status", { required: true })
+  );
+
+  if (!createStatus) {
+    return;
+  }
+  const context = core.getInput("status_name", { required: true });
+  await client.repos.createStatus({
+    state,
+    description,
+    context,
+    sha: pullRequest.head.sha,
     ...github.context.repo
   });
 }
@@ -233,5 +260,6 @@ module.exports = {
   addLabel,
   review,
   release,
+  setStatus,
   ValidationError
 };
