@@ -121,7 +121,7 @@ function validateBranches(pullRequest) {
       `Releases can only be made against ${expectedBase}. Check your action configuration.`
     );
   }
-  if (head !== expectedHead) {
+  if (expectedHead !== "*" && head !== expectedHead) {
     throw new ValidationError(
       `Releases can only be made from ${expectedHead}. Got ${head}.`
     );
