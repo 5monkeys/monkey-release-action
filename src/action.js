@@ -45,7 +45,7 @@ async function validate(pullRequest) {
     await validateRelease(pullRequest);
   } catch (error) {
     if (error.name === "ValidationError") {
-      core.error("Failed validation.");
+      core.error(`Failed validation. Message: ${error.message}`);
       // Review if error is a ValidationError
       await review(pullRequest, getReviewFailEvent(), error.message);
     }
