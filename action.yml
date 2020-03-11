@@ -25,7 +25,7 @@ inputs:
       'Pattern to validate title against.
        If it contains any of the named capture groups <year>, <month>, <day> calver validation will occur.'
     required: true
-    default: '^(?<year>[0-9]{4})\.(?<month>[0-9]{2})\.(?<day>[0-9]{2})-\d$'
+    default: '^(?<year>[0-9]{4})\.(?<month>[0-9]{2})\.(?<day>[0-9]{2})-\d+$'
   tag_prefix:
     description: 'Prefix to use when tagging release'
     required: true
