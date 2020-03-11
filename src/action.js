@@ -229,7 +229,8 @@ async function setStatus(pullRequest, state, description) {
 async function release(pullRequest) {
   core.info(`Releasing ${pullRequest.merge_commit_sha}..`);
   const tag = getTagName(pullRequest);
-  const isPrerelease = JSON.parse(core.getInput("prerelease") || false) === true;
+  const isPrerelease =
+    JSON.parse(core.getInput("prerelease") || false) === true;
   core.info(`Is prerelease? ${isPrerelease}`);
 
   await client.repos.createRelease({
