@@ -51,6 +51,49 @@ test("validate", async () => {
   );
 });
 
+
+test("validateSkipping", async () => {
+  const { validate } = require("./action");
+  process.env["INPUT_APPROVE_RELEASES"] = "true";
+  process.env["INPUT_RELEASE_PATTERN"] =
+    "^(?<year>[0-9]{4})\\.(?<month>[0-9]{2})\\.(?<day>[0-9]{2})-\\d$";
+  process.env["INPUT_BASE_BRANCH"] = "master";
+  process.env["INPUT_HEAD_BRANCH"] = "dev";
+  process.env["INPUT_RELEASE_LABEL"] = "Release";
+  process.env["INPUT_TAG_PREFIX"] = "release/";
+  process.env["INPUT_CREATE_STATUS"] = "true";
+  process.env["INPUT_STATUS_NAME"] = "Monkey Release";
+  const currentDate = moment.utc(new Date()).format("YYYY.MM.DD-1");
+  const prNumber = "1";
+  const tag = `release/${currentDate}`;
+  const headSha = "deadbeef";
+  const pullRequest = {
+    number: prNumber,
+    title: currentDate,
+    body: "mybody",
+    labels: [],
+    base: { ref: "master" },
+    head: { ref: "dev", sha: headSha },
+    validate: false
+  };
+  nock("https://api.github.com")
+    .persist()
+    .post(`/repos/${owner}/${repo}/issues/${prNumber}/labels`)
+    .reply(200)
+    .post(`/repos/${owner}/${repo}/pulls/${prNumber}/reviews`)
+    .reply(200)
+    .post(`/repos/${owner}/${repo}/statuses/${headSha}`)
+    .reply(200)
+    .get(`/repos/${owner}/${repo}/releases/tags/${tag}`)
+    .reply(404);
+
+  const validatedPR = await validate(pullRequest);
+  expect(validatedPR).toBe(pullRequest);
+  await expect(validate({ ...pullRequest, title: "badtitle" })).rejects.toThrow(
+    /Invalid release title/
+  );
+});
+
 test("getReviewApproveEvent", () => {
   const { getReviewApproveEvent } = require("./action");
 

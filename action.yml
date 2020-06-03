@@ -25,7 +25,7 @@ inputs:
       'Pattern to validate title against.
        If it contains any of the named capture groups <year>, <month>, <day> calver validation will occur.'
     required: true
-    default: '^(?<year>[0-9]{4})\.(?<month>[0-9]{2})\.(?<day>[0-9]{2})-\d$'
+    default: '^(?<year>[0-9]{4})\.(?<month>[0-9]{2})\.(?<day>[0-9]{2})-\d+$'
   tag_prefix:
     description: 'Prefix to use when tagging release'
     required: true
@@ -33,6 +33,14 @@ inputs:
   approve_releases:
     description: 'If release reviews should be approved or just commented upon'
     required: true
+    default: true
+  prerelease:
+    description: 'Creates a prerelease instead of release'
+    required: false
+    default: false
+  validate:
+    description: 'Validate title and description of pull request'
+    required: false
     default: true
   release_label:
     description: 'Label to add to release PR.'

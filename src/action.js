@@ -13,6 +13,7 @@ async function action() {
     return;
   }
   const validateActions = ["opened", "edited", "reopened"];
+
   if (validateActions.includes(action)) {
     // Run validation for accepted actions
     core.info(`Validating pull request for action ${action}.`);
@@ -32,6 +33,12 @@ async function action() {
 }
 
 async function validate(pullRequest) {
+  const doValidate = JSON.parse(core.getInput("validate") || true) === true;
+
+  if (!doValidate) {
+    return pullRequest;
+  }
+
   try {
     // Add release label
     await addLabel(pullRequest);
@@ -45,7 +52,7 @@ async function validate(pullRequest) {
     await validateRelease(pullRequest);
   } catch (error) {
     if (error.name === "ValidationError") {
-      core.error("Failed validation.");
+      core.error(`Failed validation. Message: ${error.message}`);
       // Review if error is a ValidationError
       await review(pullRequest, getReviewFailEvent(), error.message);
     }
@@ -121,7 +128,7 @@ function validateBranches(pullRequest) {
       `Releases can only be made against ${expectedBase}. Check your action configuration.`
     );
   }
-  if (head !== expectedHead) {
+  if (expectedHead !== "*" && head !== expectedHead) {
     throw new ValidationError(
       `Releases can only be made from ${expectedHead}. Got ${head}.`
     );
@@ -229,11 +236,15 @@ async function setStatus(pullRequest, state, description) {
 async function release(pullRequest) {
   core.info(`Releasing ${pullRequest.merge_commit_sha}..`);
   const tag = getTagName(pullRequest);
+  const isPrerelease =
+    JSON.parse(core.getInput("prerelease") || false) === true;
+
+  core.info(`Is prerelease? ${isPrerelease}`);
   await client.repos.createRelease({
     name: pullRequest.title,
     tag_name: tag,
     body: pullRequest.body,
-    prerelease: false,
+    prerelease: isPrerelease,
     draft: false,
     target_commitish: pullRequest.merge_commit_sha,
     ...github.context.repo
