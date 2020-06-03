@@ -13,6 +13,7 @@ async function action() {
     return;
   }
   const validateActions = ["opened", "edited", "reopened"];
+
   if (validateActions.includes(action)) {
     // Run validation for accepted actions
     core.info(`Validating pull request for action ${action}.`);
@@ -32,6 +33,12 @@ async function action() {
 }
 
 async function validate(pullRequest) {
+  const doValidate = JSON.parse(core.getInput("validate") || true) === true;
+
+  if (!doValidate) {
+    return pullRequest;
+  }
+
   try {
     // Add release label
     await addLabel(pullRequest);
@@ -231,8 +238,8 @@ async function release(pullRequest) {
   const tag = getTagName(pullRequest);
   const isPrerelease =
     JSON.parse(core.getInput("prerelease") || false) === true;
-  core.info(`Is prerelease? ${isPrerelease}`);
 
+  core.info(`Is prerelease? ${isPrerelease}`);
   await client.repos.createRelease({
     name: pullRequest.title,
     tag_name: tag,
