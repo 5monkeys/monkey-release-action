@@ -55,6 +55,13 @@ Sets if a PR should just be commented upon or approved and request changes depen
 
 The label to add to the release PR. Set to an empty string to disable. Defaults to `release`.
 
+### `prerelease`
+
+Creates a prerelease instead. Defaults to `false`.
+
+### `validate`
+
+Validate name and description of PR according to provided input. Defaults to `true`.
 
 ### `create_status`
 

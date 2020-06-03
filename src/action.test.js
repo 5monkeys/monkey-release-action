@@ -51,7 +51,6 @@ test("validate", async () => {
   );
 });
 
-
 test("validateSkipping", async () => {
   const { validate } = require("./action");
   process.env["INPUT_APPROVE_RELEASES"] = "true";
