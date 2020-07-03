@@ -8,6 +8,7 @@ const repo = "somerepo";
 beforeEach(() => {
   process.env["INPUT_REPO_TOKEN"] = "hunter2";
   process.env["GITHUB_REPOSITORY"] = `${owner}/${repo}`;
+  process.env["INPUT_TAG_TRANSFORMER"] = "title";
 });
 
 test("validate", async () => {
@@ -115,7 +116,22 @@ test("getTagName", () => {
   const { getTagName } = require("./action");
 
   process.env["INPUT_TAG_PREFIX"] = "release/";
-  expect(getTagName({ title: "hejhej" })).toBe("release/hejhej");
+  expect(getTagName({ title: "hejhej", number: 32 })).toBe("release/hejhej");
+
+  process.env["INPUT_TAG_TRANSFORMER"] = "dashes-and-number";
+  expect(getTagName({ title: "This is a PR", number: 32 })).toBe(
+    "release/#32-this-is-a-pr"
+  );
+});
+
+test("getTagName errors for bad transformers", () => {
+  const { getTagName } = require("./action");
+
+  process.env["INPUT_TAG_PREFIX"] = "release/";
+  process.env["INPUT_TAG_TRANSFORMER"] = "bad transformer";
+  expect(() => getTagName({ title: "hejhej", number: 32 })).toThrow(
+    /Invalid transformer: bad transformer/
+  );
 });
 
 test("addLabel", async () => {

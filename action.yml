@@ -42,6 +42,10 @@ inputs:
     description: 'Validate title and description of pull request'
     required: false
     default: true
+  tag_transformer:
+    description: 'Transformer to use to change the tag name.'
+    required: false
+    default: 'title'
   release_label:
     description: 'Label to add to release PR.'
     default: 'release'

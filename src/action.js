@@ -154,10 +154,25 @@ async function validateRelease(pullRequest) {
   throw new ValidationError("Release tag already exists.");
 }
 
+const TRANSFORMERS = {
+  "dashes-and-number": ({ title, number }) => {
+    const name = title
+      .replace(/\s+/g, "-")
+      .toLowerCase()
+      .replace(/[^a-z0-9-_]/g, "");
+    return `#${number}-${name}`;
+  },
+  title: ({ title }) => title
+};
+
 function getTagName(pullRequest) {
-  const { title } = pullRequest;
   const tagPrefix = core.getInput("tag_prefix", { required: true });
-  return tagPrefix + title;
+  const transformerName = core.getInput("tag_transformer");
+  const transformer = TRANSFORMERS[transformerName || "title"];
+  if (!transformer) {
+    throw Error(`Invalid transformer: ${transformerName}`);
+  }
+  return tagPrefix + transformer(pullRequest);
 }
 
 async function addLabel(pullRequest) {
