@@ -7,7 +7,9 @@
     "start": "node ./index.js",
     "test": "jest --collectCoverage",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "package": "ncc build index.js",
+    "package:watch": "ncc build index.js --watch"
   },
   "repository": {
     "type": "git",
