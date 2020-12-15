@@ -47,6 +47,15 @@ Defaults to `^(?<year>[0-9]{4})\.(?<month>[0-9]{2})\.(?<day>[0-9]{2})-\d$`.
 
 The prefix to use when tagging release. Set to null or an empty string to disable tag-prefixing. Defaults to `releases/`.
 
+### `tag_transformer`
+
+Apply a transform on the tag before validating and releasing it.
+Available choices: "title", "dashes-and-number".
+
+The default is `title`, which supplies the PR title as is.
+
+When using `dashes-and-number`, a PR with number 32 and title "Fix thing" becomes `#32-fix-thing`.
+
 ### `approve_releases`
 
 Sets if a PR should just be commented upon or approved and request changes depending on the success of validation. Accepts `true` or `false`. Defaults to `true` .
