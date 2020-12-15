@@ -50,7 +50,7 @@ outputs:
     description: 'Name of release'
 runs:
   using: 'node12'
-  main: 'index.js'
+  main: 'dist/index.js'
 branding:
   icon: 'truck'
   color: 'orange'

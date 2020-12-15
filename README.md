@@ -10,20 +10,20 @@ Validates a pull request intended for creating a [GitHub Release](https://develo
     * Add a label defined by `release_label` to the PR.
     * Validate title.
         * Checks that the PR title matches the defined `release_pattern`.
-        * If `release_pattern` is a [Calver](https://www.google.com/search?client=safari&rls=en&q=Calver&ie=UTF-8&oe=UTF-8) containing named capture groups `<year>`, `<month>` and/or `<day>` 
+        * If `release_pattern` is a [Calver](https://www.google.com/search?client=safari&rls=en&q=Calver&ie=UTF-8&oe=UTF-8) containing named capture groups `<year>`, `<month>` and/or `<day>`
         it will check that the current date matches.
         * Check that a release with the same title does not already exist.
     * Validate that the PR body is not empty.
     * Validates that the PR is from an allowed branch defined by `head_branch`.
     * If above checks fails it will review the PR and request changes.
-    * If above checks passes it will approve the PR. 
+    * If above checks passes it will approve the PR.
 * Trigger on [PullRequestEvent](https://developer.github.com/v3/activity/events/types/#pullrequestevent) with type `closed` and `merged`.
     * Create a [GitHub Release](https://developer.github.com/v3/repos/releases/#create-a-release) with the title and body of the PR. The release tag will be constructed as `tag_prefix`/`release`.
 
 
 ## Inputs
 
-### `repo_token` **Required** 
+### `repo_token` **Required**
 
 The GITHUB_TOKEN. See [details](https://help.github.com/en/articles/virtual-environments-for-github-actions#github_token-secret).
 
@@ -68,7 +68,7 @@ Validate name and description of PR according to provided input. Defaults to `tr
 Sets if a [GitHub status](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/about-status-checks) should
 be created by the action. This is useful when wanting to restrict merging until the action runs successfully. Since GitHub creates a
 check on the PR for every PR event that triggers the action isn't useful to restrict merging by the action checks. Instead use this status specified by `status_name`.
-Defaults to `true`. 
+Defaults to `true`.
 
 ### `status_name`
 
@@ -102,3 +102,15 @@ jobs:
           approve_releases: true
           release_label: release
 ```
+
+# Development
+
+Install deps: `npm ci`
+
+Run tests: `npm run test`
+
+Run lint: `npm run lint`
+
+Make sure `ncc` is installed: `npm i -g @zeit/ncc@0.22.3`.
+Either run `make package` before commit or `make package-watch` whilst developing.
+
