@@ -59,7 +59,11 @@ async function validate(pullRequest) {
     throw error;
   }
   // Approve Release
-  await review(pullRequest, getReviewApproveEvent(), "Valid release.");
+  await review(
+    pullRequest,
+    getReviewApproveEvent(),
+    core.getInput("valid_release_message")
+  );
   return pullRequest;
 }
 
