@@ -83,6 +83,11 @@ Defaults to `true`.
 
 The name of the status created when `create_status` is set to `true`. Defaults to `Monkey Release`.
 
+### `valid_release_message`
+
+Message to comment with on valid release PRs. Can be overridden to add custom
+cheerfulness or reminders. Defaults to `Valid release 🍌`.
+
 ## Outputs
 
 ### `release`
