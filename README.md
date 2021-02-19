@@ -120,6 +120,6 @@ Run tests: `npm run test`
 
 Run lint: `npm run lint`
 
-Make sure `ncc` is installed: `npm i -g @zeit/ncc@0.22.3`.
+Make sure `ncc` is installed: `npm i -g @vercel/ncc@0.27.0`.
 Either run `npm run package` before commit or `npm run package:watch` whilst developing.
 

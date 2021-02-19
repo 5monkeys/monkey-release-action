@@ -49,6 +49,9 @@ inputs:
   release_label:
     description: 'Label to add to release PR.'
     default: 'release'
+  valid_release_message:
+    description: 'Message to comment with on valid release PRs.'
+    default: 'Valid release 🍌'
 outputs:
   release:
     description: 'Name of release'
