@@ -157,6 +157,7 @@ async function validateRelease(pullRequest) {
 const TRANSFORMERS = {
   "dashes-and-number": ({ title, number }) => {
     const name = title
+      .trim()
       .replace(/\s+/g, "-")
       .toLowerCase()
       .replace(/[^a-z0-9-_]/g, "");
