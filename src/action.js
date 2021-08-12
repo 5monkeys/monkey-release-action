@@ -259,7 +259,7 @@ async function release(pullRequest) {
   await client.repos.createRelease({
     name: pullRequest.title,
     tag_name: tag,
-    body: pullRequest.body,
+    body: pullRequest.body || "",
     prerelease: isPrerelease,
     draft: false,
     target_commitish: pullRequest.merge_commit_sha,
