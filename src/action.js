@@ -161,6 +161,7 @@ async function validateRelease(pullRequest) {
 const TRANSFORMERS = {
   "dashes-and-number": ({ title, number }) => {
     const name = title
+      .trim()
       .replace(/\s+/g, "-")
       .toLowerCase()
       .replace(/[^a-z0-9-_]/g, "");
@@ -262,7 +263,7 @@ async function release(pullRequest) {
   await client.repos.createRelease({
     name: pullRequest.title,
     tag_name: tag,
-    body: pullRequest.body,
+    body: pullRequest.body || "",
     prerelease: isPrerelease,
     draft: false,
     target_commitish: pullRequest.merge_commit_sha,
