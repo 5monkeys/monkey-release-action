@@ -214,6 +214,10 @@ function getReviewFailEvent() {
 const REVIEW_APPROVE = "APPROVE";
 const REVIEW_COMMENT = "COMMENT";
 const REVIEW_REQUEST_CHANGES = "REQUEST_CHANGES";
+const STATUS_FAILURE = "failure";
+const STATUS_SUCCESS = "success";
+const DESCRIPTION_SUCCESS = "Valid release.";
+const DESCRIPTION_FAILURE = "Invalid release.";
 
 async function review(pullRequest, event, comment) {
   core.info(`Reviewing ${pullRequest.number}..`);
@@ -224,15 +228,13 @@ async function review(pullRequest, event, comment) {
     ...github.context.repo
   });
   // Set status on commit
+  const state = event === REVIEW_APPROVE;
   await setStatus(
     pullRequest,
-    event === REVIEW_APPROVE ? STATUS_SUCCESS : STATUS_FAILURE,
-    comment
+    state ? STATUS_SUCCESS : STATUS_FAILURE,
+    state ? DESCRIPTION_SUCCESS : DESCRIPTION_FAILURE
   );
 }
-
-const STATUS_FAILURE = "failure";
-const STATUS_SUCCESS = "success";
 
 async function setStatus(pullRequest, state, description) {
   core.info(`Setting status ${state}..`);
