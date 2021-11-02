@@ -119,12 +119,8 @@ jobs:
 
 # Development
 
-Install deps: `npm ci`
-
-Run tests: `npm run test`
-
-Run lint: `npm run lint`
-
-Make sure `ncc` is installed: `npm i -g @vercel/ncc@0.27.0`.
-Either run `npm run package` before commit or `npm run package:watch` whilst developing.
+- Install deps: `npm ci`
+- Run tests: `npm run test`
+- Run lint: `npm run lint`
+- Package application `npm run package`. Remember to run this before committing anything.
 

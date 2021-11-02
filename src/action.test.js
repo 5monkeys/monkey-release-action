@@ -32,7 +32,7 @@ test("validate", async () => {
     body: "mybody",
     labels: [],
     base: { ref: "master" },
-    head: { ref: "dev", sha: headSha }
+    head: { ref: "dev", sha: headSha },
   };
   nock("https://api.github.com")
     .persist()
@@ -42,7 +42,7 @@ test("validate", async () => {
     .reply(200)
     .post(`/repos/${owner}/${repo}/statuses/${headSha}`)
     .reply(200)
-    .get(`/repos/${owner}/${repo}/releases/tags/${tag}`)
+    .get(`/repos/${owner}/${repo}/releases/tags/${encodeURIComponent(tag)}`)
     .reply(404);
 
   const validatedPR = await validate(pullRequest);
@@ -74,7 +74,7 @@ test("validateSkipping", async () => {
     labels: [],
     base: { ref: "master" },
     head: { ref: "dev", sha: headSha },
-    validate: false
+    validate: false,
   };
   nock("https://api.github.com")
     .persist()
@@ -84,7 +84,7 @@ test("validateSkipping", async () => {
     .reply(200)
     .post(`/repos/${owner}/${repo}/statuses/${headSha}`)
     .reply(200)
-    .get(`/repos/${owner}/${repo}/releases/tags/${tag}`)
+    .get(`/repos/${owner}/${repo}/releases/tags/${encodeURIComponent(tag)}`)
     .reply(404);
 
   const validatedPR = await validate(pullRequest);
@@ -181,7 +181,7 @@ test("release", async () => {
   await release({
     title: "hejhej",
     body: "somebody",
-    merge_commit_sha: "deadbeef"
+    merge_commit_sha: "deadbeef",
   });
 });
 
@@ -265,7 +265,7 @@ test("validateBranches", () => {
   expect(() => {
     validateBranches({
       base: { ref: "master" },
-      head: { ref: "someweirdbranch" }
+      head: { ref: "someweirdbranch" },
     });
     approve_releases;
   }).toThrow(/Releases can only be made from/);
@@ -274,7 +274,7 @@ test("validateBranches", () => {
   expect(() => {
     validateBranches({
       base: { ref: "someweirdbranch" },
-      head: { ref: "dev" }
+      head: { ref: "dev" },
     });
   }).toThrow(/Releases can only be made against/);
 });
@@ -288,13 +288,13 @@ test("validateRelease", async () => {
 
   // Valid non-existing release
   nock("https://api.github.com")
-    .get(`/repos/${owner}/${repo}/releases/tags/${tag}`)
+    .get(`/repos/${owner}/${repo}/releases/tags/${encodeURIComponent(tag)}`)
     .reply(404);
   await validateRelease({ title: "hejhej" });
 
   // Release already exists
   nock("https://api.github.com")
-    .get(`/repos/${owner}/${repo}/releases/tags/${tag}`)
+    .get(`/repos/${owner}/${repo}/releases/tags/${encodeURIComponent(tag)}`)
     .reply(200);
   await expect(validateRelease({ title: "hejhej" })).rejects.toThrow(
     /Release tag already exists/
@@ -302,7 +302,7 @@ test("validateRelease", async () => {
 
   // Server error
   nock("https://api.github.com")
-    .get(`/repos/${owner}/${repo}/releases/tags/${tag}`)
+    .get(`/repos/${owner}/${repo}/releases/tags/${encodeURIComponent(tag)}`)
     .reply(500);
   await expect(validateRelease({ title: "hejhej" })).rejects.toThrow(Error);
 });
