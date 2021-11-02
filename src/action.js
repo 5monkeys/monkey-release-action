@@ -1,7 +1,7 @@
 const core = require("@actions/core");
 const github = require("@actions/github");
 
-const client = new github.GitHub(
+const client = new github.getOctokit(
   core.getInput("repo_token", { required: true })
 );
 
@@ -144,9 +144,9 @@ async function validateRelease(pullRequest) {
   const tag = getTagName(pullRequest);
   // Check that current release tag returns 404 to ensure no duplicate releases
   try {
-    await client.repos.getReleaseByTag({
+    await client.rest.repos.getReleaseByTag({
       tag: tag,
-      ...github.context.repo
+      ...github.context.repo,
     });
   } catch (error) {
     if (error.status === 404) {
@@ -167,7 +167,7 @@ const TRANSFORMERS = {
       .replace(/[^a-z0-9-_]/g, "");
     return `#${number}-${name}`;
   },
-  title: ({ title }) => title
+  title: ({ title }) => title,
 };
 
 function getTagName(pullRequest) {
@@ -190,10 +190,10 @@ async function addLabel(pullRequest) {
   if (pullRequest.labels && pullRequest.labels.includes(releaseLabel)) {
     return;
   }
-  await client.issues.addLabels({
+  await client.rest.issues.addLabels({
     issue_number: pullRequest.number,
     labels: [releaseLabel],
-    ...github.context.repo
+    ...github.context.repo,
   });
 }
 
@@ -221,11 +221,11 @@ const DESCRIPTION_FAILURE = "Invalid release.";
 
 async function review(pullRequest, event, comment) {
   core.info(`Reviewing ${pullRequest.number}..`);
-  await client.pulls.createReview({
+  await client.rest.pulls.createReview({
     pull_number: pullRequest.number,
     body: comment,
     event: event,
-    ...github.context.repo
+    ...github.context.repo,
   });
   // Set status on commit
   const state = event === REVIEW_APPROVE;
@@ -246,12 +246,12 @@ async function setStatus(pullRequest, state, description) {
     return;
   }
   const context = core.getInput("status_name", { required: true });
-  await client.repos.createStatus({
+  await client.rest.repos.createCommitStatus({
     state,
     description,
     context,
     sha: pullRequest.head.sha,
-    ...github.context.repo
+    ...github.context.repo,
   });
 }
 
@@ -262,14 +262,14 @@ async function release(pullRequest) {
     JSON.parse(core.getInput("prerelease") || false) === true;
 
   core.info(`Is prerelease? ${isPrerelease}`);
-  await client.repos.createRelease({
+  await client.rest.repos.createRelease({
     name: pullRequest.title,
     tag_name: tag,
     body: pullRequest.body || "",
     prerelease: isPrerelease,
     draft: false,
     target_commitish: pullRequest.merge_commit_sha,
-    ...github.context.repo
+    ...github.context.repo,
   });
 }
 
@@ -294,5 +294,5 @@ module.exports = {
   review,
   release,
   setStatus,
-  ValidationError
+  ValidationError,
 };
