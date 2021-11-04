@@ -260,10 +260,6 @@ async function setStatus(pullRequest, state, description) {
 async function generateBody(pullRequest) {
   const tag = getTagName(pullRequest);
 
-  core.info(
-    `repo/${github.context.repo.owner}/${github.context.repo.repo}, tag: ${tag}, commit sha: ${pullRequest.merge_commit_sha}`
-  );
-
   const { data } = await client.request(
     "POST /repos/{owner}/{repo}/releases/generate-notes",
     {
