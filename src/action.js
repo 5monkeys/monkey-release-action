@@ -116,7 +116,9 @@ function validateBody(pullRequest) {
   core.info("Validating body..");
   const { body } = pullRequest;
   if (!body && !JSON.parse(core.getInput("generate_body") || false) === true) {
-    throw new ValidationError("Missing description. Use generate_body: true to automatically generate one.");
+    throw new ValidationError(
+      "Missing description. Use generate_body: true to automatically generate one."
+    );
   }
 }
 
@@ -258,15 +260,20 @@ async function setStatus(pullRequest, state, description) {
 async function generateBody(pullRequest) {
   const tag = getTagName(pullRequest);
 
-  core.info(`repo/${github.context.repo.owner}/${github.context.repo.repo}, tag: ${tag}, commit sha: ${pullRequest.merge_commit_sha}`);
+  core.info(
+    `repo/${github.context.repo.owner}/${github.context.repo.repo}, tag: ${tag}, commit sha: ${pullRequest.merge_commit_sha}`
+  );
 
-  const { data } = await client.request('POST /repos/{owner}/{repo}/releases/generate-notes', {
-    owner: github.context.repo.owner,
-    repo: github.context.repo.repo,
-    tag_name: tag,
-    target_commitish: pullRequest.merge_commit_sha,
-    ...github.context.repo,
-  })
+  const { data } = await client.request(
+    "POST /repos/{owner}/{repo}/releases/generate-notes",
+    {
+      owner: github.context.repo.owner,
+      repo: github.context.repo.repo,
+      tag_name: tag,
+      target_commitish: pullRequest.merge_commit_sha,
+      ...github.context.repo,
+    }
+  );
 
   pullRequest.body = JSON.parse(data)["body"];
 }
