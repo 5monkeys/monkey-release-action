@@ -113,7 +113,7 @@ function validateTitle(pullRequest) {
 }
 
 function validateBody(pullRequest) {
-  core.info("Validating body..");
+  core.info("Validating body...");
   const { body } = pullRequest;
   if (!body && !JSON.parse(core.getInput("generate_body") || false) === true) {
     throw new ValidationError(
