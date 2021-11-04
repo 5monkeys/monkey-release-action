@@ -8549,7 +8549,8 @@ async function generateBody(pullRequest) {
     }
   );
 
-  pullRequest.body = JSON.parse(data)["body"];
+  core.info(data);
+  pullRequest.body = data; //JSON.parse(data)["body"];
 }
 
 async function release(pullRequest) {
