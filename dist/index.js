@@ -8394,9 +8394,7 @@ function validateBody(pullRequest) {
   core.info("Validating body...");
   const { body } = pullRequest;
   if (!body && !JSON.parse(core.getInput("generate_body") || false) === true) {
-    throw new ValidationError(
-      "Missing description. Use generate_body: true to automatically generate one."
-    );
+    throw new ValidationError("Missing description.");
   }
 }
 
@@ -8549,8 +8547,7 @@ async function generateBody(pullRequest) {
     }
   );
 
-  core.info(data);
-  pullRequest.body = data; //JSON.parse(data)["body"];
+  pullRequest.body = JSON.parse(data)["body"];
 }
 
 async function release(pullRequest) {

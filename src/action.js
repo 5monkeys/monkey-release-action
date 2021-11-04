@@ -116,9 +116,7 @@ function validateBody(pullRequest) {
   core.info("Validating body...");
   const { body } = pullRequest;
   if (!body && !JSON.parse(core.getInput("generate_body") || false) === true) {
-    throw new ValidationError(
-      "Missing description. Use generate_body: true to automatically generate one."
-    );
+    throw new ValidationError("Missing description.");
   }
 }
 
