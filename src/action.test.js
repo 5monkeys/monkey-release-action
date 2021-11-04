@@ -183,6 +183,20 @@ test("release", async () => {
     body: "somebody",
     merge_commit_sha: "deadbeef",
   });
+
+  // Test integration of body generation
+  process.env["INPUT_GENERATE_BODY"] = "true";
+  nock("https://api.github.com")
+    .post(`/repos/${owner}/${repo}/releases/generate-notes`)
+    .reply(200, '{"name": "flufftitle","body": "mybody"}');
+  nock("https://api.github.com")
+    .post(`/repos/${owner}/${repo}/releases`)
+    .reply(200);
+  await release({
+    title: "hejhej",
+    body: "",
+    merge_commit_sha: "deadbeef",
+  });
 });
 
 test("validateTitle", () => {
@@ -335,7 +349,6 @@ test("generateBody", async () => {
 
   process.env["INPUT_TAG_PREFIX"] = "release/";
 
-  const tag = "release/hejhej";
   pr = {
     title: "hejhej",
     body: "",
