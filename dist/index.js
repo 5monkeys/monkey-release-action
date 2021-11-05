@@ -8338,7 +8338,7 @@ async function validate(pullRequest) {
   }
   // Generate body for review
   // TODO this is mostly temporary
-  generateBody(pullRequest);
+  await generateBody(pullRequest);
   // Approve Release
   await review(
     pullRequest,
@@ -8549,18 +8549,8 @@ async function generateBody(pullRequest) {
         target_commitish: "HEAD", //TODO might be unsafe, mostly for testing
       }
     );
-    // TODO remove prints
-    core.info(JSON.stringify(data));
-
-    core.info(JSON.parse(JSON.stringify(data))["body"]);
-    core.info(JSON.parse(JSON.stringify(data)).body);
-    core.info(data["body"]);
-    core.info(data.body);
-
-    const { body } = data;
-    core.info(body);
-
-    pullRequest.body = body;
+    pullRequest.body = data.body;
+    core.info("Body is:\n" + pullRequest.body + "\n\n");
   } catch (error) {
     core.info("Failed to generate a body: " + error);
     pullRequest.body += "\nFailed to generate a body (" + error + ")";
