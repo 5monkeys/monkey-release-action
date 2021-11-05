@@ -8549,9 +8549,17 @@ async function generateBody(pullRequest) {
         target_commitish: "HEAD", //TODO might be unsafe, mostly for testing
       }
     );
+    // TODO remove prints
     core.info(JSON.stringify(data));
 
+    core.info(JSON.parse(JSON.stringify(data))["body"]);
+    core.info(JSON.parse(JSON.stringify(data)).body);
+    core.info(data["body"]);
+    core.info(data.body);
+
     const { body } = data;
+    core.info(body);
+
     pullRequest.body = body;
   } catch (error) {
     core.info("Failed to generate a body: " + error);
