@@ -8336,11 +8336,14 @@ async function validate(pullRequest) {
     }
     throw error;
   }
+  // Generate body for review
+  // TODO this is mostly temporary
+  generateBody(pullRequest);
   // Approve Release
   await review(
     pullRequest,
     getReviewApproveEvent(),
-    core.getInput("valid_release_message")
+    core.getInput("valid_release_message") + "\n" + pullRequest.body
   );
   return pullRequest;
 }
