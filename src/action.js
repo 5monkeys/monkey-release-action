@@ -261,16 +261,20 @@ async function setStatus(pullRequest, state, description) {
 async function generateBody(pullRequest) {
   const tag = getTagName(pullRequest);
 
-  const { data } = await client.request(
-    "POST /repos/{owner}/{repo}/releases/generate-notes",
-    {
-      owner: github.context.repo.owner,
-      repo: github.context.repo.repo,
-      tag_name: tag,
-      target_commitish: pullRequest.merge_commit_sha,
-      ...github.context.repo,
-    }
-  );
+  try {
+    const { data } = await client.request(
+      "POST /repos/{owner}/{repo}/releases/generate-notes",
+      {
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        tag_name: tag,
+        target_commitish: pullRequest.merge_commit_sha,
+        ...github.context.repo,
+      }
+    );
+  } catch (error) {
+    core.info("Failed to generate a body: " + error);
+  }
 
   core.info(JSON.stringify(data));
   pullRequest.body = JSON.parse(data)["body"];
