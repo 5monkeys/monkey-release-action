@@ -8547,6 +8547,7 @@ async function generateBody(pullRequest) {
     }
   );
 
+  core.info(JSON.stringify(data));
   pullRequest.body = JSON.parse(data)["body"];
 }
 
