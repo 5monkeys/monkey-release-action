@@ -8394,7 +8394,7 @@ function validateTitle(pullRequest) {
 }
 
 function validateBody(pullRequest) {
-  core.info("Validating body...");
+  core.info("Validating body..");
   const { body } = pullRequest;
   if (!body && !JSON.parse(core.getInput("generate_body") || false) === true) {
     throw new ValidationError("Missing description.");
@@ -8563,9 +8563,8 @@ async function release(pullRequest) {
     JSON.parse(core.getInput("prerelease") || false) === true;
 
   const shouldGenerateBody =
-        JSON.parse(core.getInput("generate_body") || false) === true;
-  if (shouldGenerateBody)
-    await generateBody(pullRequest);
+    JSON.parse(core.getInput("generate_body") || false) === true;
+  if (shouldGenerateBody) await generateBody(pullRequest);
 
   core.info(`Is prerelease? ${isPrerelease}`);
   await client.rest.repos.createRelease({
