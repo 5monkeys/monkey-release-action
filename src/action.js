@@ -271,13 +271,11 @@ async function generateBody(pullRequest) {
         target_commitish: "HEAD", //TODO might be unsafe, mostly for testing
       }
     );
-    core.info(pullRequest.merge_commit_sha);
+    core.info(JSON.stringify(data));
+    pullRequest.body = JSON.parse(data)["body"];
   } catch (error) {
     core.info("Failed to generate a body: " + error);
   }
-
-  core.info(JSON.stringify(data));
-  pullRequest.body = JSON.parse(data)["body"];
 }
 
 async function release(pullRequest) {
