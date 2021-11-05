@@ -357,7 +357,7 @@ test("generateBody", async () => {
 
   nock("https://api.github.com")
     .post(`/repos/${owner}/${repo}/releases/generate-notes`)
-    .reply(200, '{"name": "flufftitle","body": "mybody"}');
+    .reply(200, JSON.parse('{"name": "flufftitle","body": "mybody"}'));
   await generateBody(pr);
   expect(pr.body).toBe("mybody");
 });

@@ -8550,7 +8550,6 @@ async function generateBody(pullRequest) {
       }
     );
     pullRequest.body = data.body;
-    core.info("Body is:\n" + pullRequest.body + "\n\n");
   } catch (error) {
     core.info("Failed to generate a body: " + error);
     pullRequest.body += "\nFailed to generate a body (" + error + ")";
@@ -8563,8 +8562,10 @@ async function release(pullRequest) {
   const isPrerelease =
     JSON.parse(core.getInput("prerelease") || false) === true;
 
-  if (JSON.parse(core.getInput("generate_body") || false) === true)
-    generateBody(pullRequest);
+  const shouldGenerateBody =
+        JSON.parse(core.getInput("generate_body") || false) === true;
+  if (shouldGenerateBody)
+    await generateBody(pullRequest);
 
   core.info(`Is prerelease? ${isPrerelease}`);
   await client.rest.repos.createRelease({
