@@ -268,10 +268,10 @@ async function generateBody(pullRequest) {
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
         tag_name: tag,
-        target_commitish: pullRequest.merge_commit_sha,
-        ...github.context.repo,
+        target_commitish: "HEAD", //TODO might be unsafe, mostly for testing
       }
     );
+    core.info(pullRequest.merge_commit_sha);
   } catch (error) {
     core.info("Failed to generate a body: " + error);
   }
