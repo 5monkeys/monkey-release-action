@@ -8365,7 +8365,8 @@ function validateTitle(pullRequest) {
   // Check year
   if (
     releasePattern.includes("<year>") &&
-    today.getUTCFullYear() !== Number(year)
+    today.getUTCFullYear() !== Number(year) &&
+    Number(today.getUTCFullYear().toString().substr(-2)) !== Number(year)
   ) {
     throw new ValidationError(
       `${year} is not a valid year. Current is ${today.getUTCFullYear()}.`

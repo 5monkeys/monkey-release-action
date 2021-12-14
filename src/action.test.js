@@ -238,6 +238,14 @@ test("validateTitle", () => {
   expect(() => {
     validateTitle({ title: "IAMINVALID" });
   }).toThrow(/Invalid release title/);
+
+  // Valid as short year
+  process.env["INPUT_RELEASE_PATTERN"] =
+    "^(?<year>[0-9]{2})\\.(?<month>[0-9]{2})\\.\\d$";
+  validateTitle({ title: moment.utc(new Date()).format("YY.MM.1") });
+  expect(() => {
+    validateTitle({ title: "20.12.1" });
+  }).toThrow(/is not a valid year/);
 });
 
 test("validateBody", () => {
