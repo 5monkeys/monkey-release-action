@@ -119,7 +119,7 @@ test("getTagName", () => {
   expect(getTagName({ title: "hejhej", number: 32 })).toBe("release/hejhej");
 
   process.env["INPUT_TAG_TRANSFORMER"] = "dashes-and-number";
-  expect(getTagName({ title: "This is a PR", number: 32 })).toBe(
+  expect(getTagName({ title: "This is a PR---", number: 32 })).toBe(
     "release/#32-this-is-a-pr"
   );
 
