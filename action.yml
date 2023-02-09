@@ -28,7 +28,7 @@ inputs:
     default: '^(?<year>[0-9]{4})\.(?<month>[0-9]{2})\.(?<day>[0-9]{2})-\d+$'
   tag_prefix:
     description: 'Prefix to use when tagging release'
-    required: true
+    required: false
     default: 'release/'
   approve_releases:
     description: 'If release reviews should be approved or just commented upon'

@@ -8451,13 +8451,13 @@ const TRANSFORMERS = {
 };
 
 function getTagName(pullRequest) {
-  const tagPrefix = core.getInput("tag_prefix", { required: true });
+  const tagPrefix = core.getInput("tag_prefix");
   const transformerName = core.getInput("tag_transformer");
   const transformer = TRANSFORMERS[transformerName || "title"];
   if (!transformer) {
     throw Error(`Invalid transformer: ${transformerName}`);
   }
-  return tagPrefix + transformer(pullRequest);
+  return (tagPrefix || "") + transformer(pullRequest);
 }
 
 async function addLabel(pullRequest) {
