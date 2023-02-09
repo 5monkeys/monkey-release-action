@@ -115,6 +115,9 @@ test("getReviewFailEvent", () => {
 test("getTagName", () => {
   const { getTagName } = require("./action");
 
+  process.env["INPUT_TAG_PREFIX"] = "";
+  expect(getTagName({ title: "hejhej", number: 32 })).toBe("hejhej");
+
   process.env["INPUT_TAG_PREFIX"] = "release/";
   expect(getTagName({ title: "hejhej", number: 32 })).toBe("release/hejhej");
 
