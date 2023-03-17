@@ -6,6 +6,7 @@ const owner = "someowner";
 const repo = "somerepo";
 
 beforeEach(() => {
+  nock.cleanAll();
   process.env["INPUT_REPO_TOKEN"] = "hunter2";
   process.env["GITHUB_REPOSITORY"] = `${owner}/${repo}`;
   process.env["INPUT_TAG_TRANSFORMER"] = "title";
@@ -26,6 +27,7 @@ test("validate", async () => {
   const prNumber = "1";
   const tag = `release/${currentDate}`;
   const headSha = "deadbeef";
+  const ciUser = "our-ci-user";
   const pullRequest = {
     number: prNumber,
     title: currentDate,
@@ -43,7 +45,14 @@ test("validate", async () => {
     .post(`/repos/${owner}/${repo}/statuses/${headSha}`)
     .reply(200)
     .get(`/repos/${owner}/${repo}/releases/tags/${encodeURIComponent(tag)}`)
-    .reply(404);
+    .reply(404)
+    .get(`/user`)
+    .reply(200, { login: ciUser })
+    .get(`/repos/${owner}/${repo}/pulls/${prNumber}/reviews`)
+    .reply(200, [
+      { user: { login: ciUser }, state: "CHANGES_REQUESTED" },
+      { user: { login: "someone-else" }, state: "APPROVED" },
+    ]);
 
   const validatedPR = await validate(pullRequest);
   expect(validatedPR).toBe(pullRequest);
@@ -67,6 +76,7 @@ test("validateSkipping", async () => {
   const prNumber = "1";
   const tag = `release/${currentDate}`;
   const headSha = "deadbeef";
+  const ciUser = "our-ci-user";
   const pullRequest = {
     number: prNumber,
     title: currentDate,
@@ -76,7 +86,7 @@ test("validateSkipping", async () => {
     head: { ref: "dev", sha: headSha },
     validate: false,
   };
-  nock("https://api.github.com")
+  const scope = nock("https://api.github.com")
     .persist()
     .post(`/repos/${owner}/${repo}/issues/${prNumber}/labels`)
     .reply(200)
@@ -85,13 +95,21 @@ test("validateSkipping", async () => {
     .post(`/repos/${owner}/${repo}/statuses/${headSha}`)
     .reply(200)
     .get(`/repos/${owner}/${repo}/releases/tags/${encodeURIComponent(tag)}`)
-    .reply(404);
+    .reply(404)
+    .get(`/user`)
+    .reply(200, { login: ciUser })
+    .get(`/repos/${owner}/${repo}/pulls/${prNumber}/reviews`)
+    .reply(200, [
+      { user: { login: ciUser }, state: "CHANGES_REQUESTED" },
+      { user: { login: "someone-else" }, state: "APPROVED" },
+    ]);
 
   const validatedPR = await validate(pullRequest);
   expect(validatedPR).toBe(pullRequest);
   await expect(validate({ ...pullRequest, title: "badtitle" })).rejects.toThrow(
     /Invalid release title/
   );
+  scope.done();
 });
 
 test("getReviewApproveEvent", () => {
@@ -110,6 +128,37 @@ test("getReviewFailEvent", () => {
   expect(getReviewFailEvent()).toBe("REQUEST_CHANGES");
   process.env["INPUT_APPROVE_RELEASES"] = "false";
   expect(getReviewFailEvent()).toBe("COMMENT");
+});
+
+test("hasPreviouslyApproved", async () => {
+  const { hasPreviouslyApproved } = require("./action");
+  const prNumber = "1";
+  const ciUser = "our-ci-user";
+  const pullRequest = { number: prNumber };
+  const scope = nock("https://api.github.com")
+    .get(`/user`)
+    .reply(200, { login: ciUser })
+    .get(`/repos/${owner}/${repo}/pulls/${prNumber}/reviews`)
+    .reply(200, [
+      { user: { login: ciUser }, state: "CHANGES_REQUESTED" },
+      { user: { login: "someone-else" }, state: "APPROVED" },
+    ]);
+
+  expect(await hasPreviouslyApproved(pullRequest)).toBe(false);
+  scope.done();
+
+  const nextScope = nock("https://api.github.com")
+    .get(`/user`)
+    .reply(200, { login: ciUser })
+    .get(`/repos/${owner}/${repo}/pulls/${prNumber}/reviews`)
+    .reply(200, [
+      { user: { login: ciUser }, state: "CHANGES_REQUESTED" },
+      { user: { login: "someone-else" }, state: "APPROVED" },
+      { user: { login: ciUser }, state: "APPROVED" },
+    ]);
+
+  expect(await hasPreviouslyApproved(pullRequest)).toBe(true);
+  nextScope.done();
 });
 
 test("getTagName", () => {
