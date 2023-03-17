@@ -289,12 +289,6 @@ async function hasPreviouslyApproved(pullRequest) {
     pull_number: pullRequest.number,
     ...github.context.repo,
   });
-  console.log(
-    response.data.filter((review) => {
-      console.log(review, userResponse.data);
-      return review.user.login === userResponse.data.login;
-    })
-  );
   const lastReview = response.data
     .filter((review) => review.user.login === userResponse.data.login)
     .pop();
