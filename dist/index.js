@@ -8336,12 +8336,20 @@ async function validate(pullRequest) {
     }
     throw error;
   }
-  // Approve Release
-  await review(
-    pullRequest,
-    getReviewApproveEvent(),
-    core.getInput("valid_release_message")
-  );
+
+  // Approve Release if our latest review wasn't an approval
+  const approveEvent = getReviewApproveEvent();
+  const shouldApproveAgain =
+    approveEvent === REVIEW_APPROVE
+      ? !(await hasPreviouslyApproved(pullRequest))
+      : approveEvent === REVIEW_COMMENT;
+  if (shouldApproveAgain) {
+    await review(
+      pullRequest,
+      approveEvent,
+      core.getInput("valid_release_message")
+    );
+  }
   return pullRequest;
 }
 
@@ -8553,6 +8561,18 @@ async function release(pullRequest) {
   });
 }
 
+async function hasPreviouslyApproved(pullRequest) {
+  const userResponse = await client.rest.users.getAuthenticated();
+  const response = await client.rest.pulls.listReviews({
+    pull_number: pullRequest.number,
+    ...github.context.repo,
+  });
+  const lastReview = response.data
+    .filter((review) => review.user.login === userResponse.data.login)
+    .pop();
+  return lastReview ? lastReview.state === "APPROVED" : false;
+}
+
 class ValidationError extends Error {
   constructor(message) {
     super(message);
@@ -8562,6 +8582,7 @@ class ValidationError extends Error {
 
 module.exports = {
   action,
+  hasPreviouslyApproved,
   validate,
   validateTitle,
   validateBody,
