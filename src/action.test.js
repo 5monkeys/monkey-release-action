@@ -337,6 +337,54 @@ test("validateBranches", () => {
       head: { ref: "dev" },
     });
   }).toThrow(/Releases can only be made against/);
+
+  // Test wildcard
+  process.env["INPUT_HEAD_BRANCH"] = "*";
+
+  // Valid branch
+  validateBranches({ base: { ref: "master" }, head: { ref: "dev" } });
+
+  // Weird branch
+  validateBranches({
+    base: { ref: "master" },
+    head: { ref: "someweirdbranch" },
+  });
+
+  process.env["INPUT_HEAD_BRANCH"] = "hotfix/*";
+
+  // Valid branch
+  validateBranches({
+    base: { ref: "master" },
+    head: { ref: "hotfix/monkey-business" },
+  });
+
+  // Invalid head
+  expect(() => {
+    validateBranches({
+      base: { ref: "master" },
+      head: { ref: "someweirdbranch" },
+    });
+    approve_releases;
+  }).toThrow(/Releases can only be made from/);
+
+  // Test multiple head branches
+  process.env["INPUT_HEAD_BRANCH"] = ["dev", "hotfix/*"];
+
+  // Valid branch
+  validateBranches({ base: { ref: "master" }, head: { ref: "dev" } });
+  validateBranches({
+    base: { ref: "master" },
+    head: { ref: "hotfix/monkey-business" },
+  });
+
+  // Invalid head
+  expect(() => {
+    validateBranches({
+      base: { ref: "master" },
+      head: { ref: "someweirdbranch" },
+    });
+    approve_releases;
+  }).toThrow(/Releases can only be made from/);
 });
 
 test("validateRelease", async () => {

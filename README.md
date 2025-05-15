@@ -35,6 +35,15 @@ The branch which the release PR will target. Defaults to `master`.
 
 The branch which the release PR originates from. Defaults to `dev`.
 
+#### Can be a glob pattern:
+- Each pattern is trimmed of whitespace.
+- `*` is a wildcard that matches zero or more characters.
+- `,` is a separator for specifying multiple branches.
+
+```yaml
+head_branch: "dev, hotfix/*"
+```
+
 ### `release_pattern`
 
 The pattern to validate the PR title against. If it contains any of the named capture groups `<year>`, `<month>` and/or `<day>` Calver validation will occur to ensure that the date is current.
@@ -123,4 +132,3 @@ jobs:
 - Run tests: `npm run test`
 - Run lint: `npm run lint`
 - Package application `npm run package`. Remember to run this before committing anything.
-

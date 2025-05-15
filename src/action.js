@@ -129,6 +129,21 @@ function validateBody(pullRequest) {
   }
 }
 
+/**
+ * @param {string} pattern
+ * @param {string} text
+ * @returns {boolean}
+ */
+function testGlob(pattern, text) {
+  const regexp = new RegExp(
+    `^${pattern
+      .split(",")
+      .map((pattern) => `${pattern.trim().replaceAll("*", ".*")}`)
+      .join("|")}$`
+  );
+  return regexp.test(text);
+}
+
 function validateBranches(pullRequest) {
   core.info("Validating branches..");
   const expectedBase = core.getInput("base_branch", { required: true });
@@ -141,7 +156,8 @@ function validateBranches(pullRequest) {
       `Releases can only be made against ${expectedBase}. Check your action configuration.`
     );
   }
-  if (expectedHead !== "*" && head !== expectedHead) {
+
+  if (!testGlob(expectedHead, head)) {
     throw new ValidationError(
       `Releases can only be made from ${expectedHead}. Got ${head}.`
     );
