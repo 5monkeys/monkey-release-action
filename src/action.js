@@ -138,7 +138,7 @@ function testGlob(pattern, text) {
   const regexp = new RegExp(
     `^${pattern
       .split(",")
-      .map((pattern) => `${pattern.trim().replaceAll("*", ".*")}`)
+      .map((pattern) => `(${pattern.trim().replaceAll("*", ".*")})`)
       .join("|")}$`
   );
   return regexp.test(text);
