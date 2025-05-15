@@ -2,12 +2,13 @@
   "name": "monkey-release-action",
   "private": true,
   "description": "GitHub Action to validate and create GitHub Releases from pull requests",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "start": "node ./index.js",
-    "test": "jest --collectCoverage",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "test": "node --test",
+    "lint": "eslint . --ignore-pattern=dist/",
+    "lint:fix": "eslint . --ignore-pattern=dist/ --fix",
     "package": "ncc build index.js",
     "package:watch": "ncc build index.js --watch"
   },
@@ -21,17 +22,16 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^1.6.0",
-    "@actions/github": "^5.0.0",
-    "moment": "^2.29.1"
+    "@actions/core": "^1.11.1",
+    "@actions/github": "^5.0.1",
+    "moment": "^2.30.1"
   },
   "devDependencies": {
-    "@vercel/ncc": "^0.31.1",
-    "eslint": "^8.1.0",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-prettier": "^4.0.0",
-    "jest": "^27.3.1",
-    "nock": "^13.1.4",
-    "prettier": "^2.4.1"
+    "@eslint/js": "^9.26.0",
+    "eslint": "^9.26.0",
+    "eslint-config-prettier": "^10.1.5",
+    "globals": "^16.1.0",
+    "nock": "^14.0.4",
+    "prettier": "^3.5.3"
   }
 }

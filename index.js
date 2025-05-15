@@ -1,5 +1,5 @@
-const core = require("@actions/core");
-const { action } = require("./src/action");
+import core from "@actions/core";
+import { action } from "./src/action";
 
 action().catch((error) => {
   // Action threw an error. Fail the action with the error message.

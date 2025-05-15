@@ -1,11 +1,11 @@
-const core = require("@actions/core");
-const github = require("@actions/github");
+import core from "@actions/core";
+import github from "@actions/github";
 
 const client = new github.getOctokit(
-  core.getInput("repo_token", { required: true })
+  core.getInput("repo_token", { required: true }),
 );
 
-async function action() {
+export async function action() {
   const action = github.context.payload.action;
   const pullRequest = github.context.payload.pull_request;
   if (pullRequest == null) {
@@ -32,7 +32,7 @@ async function action() {
   core.setOutput("release", pullRequest.title);
 }
 
-async function validate(pullRequest) {
+export async function validate(pullRequest) {
   const doValidate = JSON.parse(core.getInput("validate") || true) === true;
 
   if (!doValidate) {
@@ -69,16 +69,16 @@ async function validate(pullRequest) {
     await review(
       pullRequest,
       approveEvent,
-      core.getInput("valid_release_message")
+      core.getInput("valid_release_message"),
     );
   }
   return pullRequest;
 }
 
-function validateTitle(pullRequest) {
+export function validateTitle(pullRequest) {
   const releasePattern = core.getInput("release_pattern", { required: true });
   core.info(
-    `Validating title ${pullRequest.title} against pattern ${releasePattern}`
+    `Validating title ${pullRequest.title} against pattern ${releasePattern}`,
   );
 
   // Run pull request title against defined pattern
@@ -99,7 +99,7 @@ function validateTitle(pullRequest) {
     Number(today.getUTCFullYear().toString().substr(-2)) !== Number(year)
   ) {
     throw new ValidationError(
-      `${year} is not a valid year. Current is ${today.getUTCFullYear()}.`
+      `${year} is not a valid year. Current is ${today.getUTCFullYear()}.`,
     );
   }
 
@@ -109,19 +109,19 @@ function validateTitle(pullRequest) {
     today.getUTCMonth() + 1 !== Number(month)
   ) {
     throw new ValidationError(
-      `${month} is not a valid month. Current is ${today.getUTCMonth() + 1}.`
+      `${month} is not a valid month. Current is ${today.getUTCMonth() + 1}.`,
     );
   }
 
   // Check day
   if (releasePattern.includes("<day>") && today.getUTCDate() !== Number(day)) {
     throw new ValidationError(
-      `${day} is not a valid day. Current is ${today.getUTCDate()}.`
+      `${day} is not a valid day. Current is ${today.getUTCDate()}.`,
     );
   }
 }
 
-function validateBody(pullRequest) {
+export function validateBody(pullRequest) {
   core.info("Validating body..");
   const { body } = pullRequest;
   if (!body) {
@@ -139,12 +139,12 @@ function testGlob(pattern, text) {
     `^${pattern
       .split(",")
       .map((pattern) => `(${pattern.trim().replaceAll("*", ".*")})`)
-      .join("|")}$`
+      .join("|")}$`,
   );
   return regexp.test(text);
 }
 
-function validateBranches(pullRequest) {
+export function validateBranches(pullRequest) {
   core.info("Validating branches..");
   const expectedBase = core.getInput("base_branch", { required: true });
   const expectedHead = core.getInput("head_branch", { required: true });
@@ -153,18 +153,18 @@ function validateBranches(pullRequest) {
 
   if (base !== expectedBase) {
     throw new ValidationError(
-      `Releases can only be made against ${expectedBase}. Check your action configuration.`
+      `Releases can only be made against ${expectedBase}. Check your action configuration.`,
     );
   }
 
   if (!testGlob(expectedHead, head)) {
     throw new ValidationError(
-      `Releases can only be made from ${expectedHead}. Got ${head}.`
+      `Releases can only be made from ${expectedHead}. Got ${head}.`,
     );
   }
 }
 
-async function validateRelease(pullRequest) {
+export async function validateRelease(pullRequest) {
   core.info("Validating release..");
   const tag = getTagName(pullRequest);
   // Check that current release tag returns 404 to ensure no duplicate releases
@@ -196,7 +196,7 @@ const TRANSFORMERS = {
   title: ({ title }) => title,
 };
 
-function getTagName(pullRequest) {
+export function getTagName(pullRequest) {
   const tagPrefix = core.getInput("tag_prefix");
   const transformerName = core.getInput("tag_transformer");
   const transformer = TRANSFORMERS[transformerName || "title"];
@@ -206,7 +206,7 @@ function getTagName(pullRequest) {
   return (tagPrefix || "") + transformer(pullRequest);
 }
 
-async function addLabel(pullRequest) {
+export async function addLabel(pullRequest) {
   const releaseLabel = core.getInput("release_label", { required: false });
   if (!releaseLabel) {
     return;
@@ -223,16 +223,16 @@ async function addLabel(pullRequest) {
   });
 }
 
-function getReviewApproveEvent() {
+export function getReviewApproveEvent() {
   const approveReleases = JSON.parse(
-    core.getInput("approve_releases", { required: true })
+    core.getInput("approve_releases", { required: true }),
   );
   return approveReleases ? REVIEW_APPROVE : REVIEW_COMMENT;
 }
 
-function getReviewFailEvent() {
+export function getReviewFailEvent() {
   const approveReleases = JSON.parse(
-    core.getInput("approve_releases", { required: true })
+    core.getInput("approve_releases", { required: true }),
   );
   return approveReleases ? REVIEW_REQUEST_CHANGES : REVIEW_COMMENT;
 }
@@ -245,7 +245,7 @@ const STATUS_SUCCESS = "success";
 const DESCRIPTION_SUCCESS = "Valid release.";
 const DESCRIPTION_FAILURE = "Invalid release.";
 
-async function review(pullRequest, event, comment) {
+export async function review(pullRequest, event, comment) {
   core.info(`Reviewing ${pullRequest.number}..`);
   await client.rest.pulls.createReview({
     pull_number: pullRequest.number,
@@ -258,14 +258,14 @@ async function review(pullRequest, event, comment) {
   await setStatus(
     pullRequest,
     state ? STATUS_SUCCESS : STATUS_FAILURE,
-    state ? DESCRIPTION_SUCCESS : DESCRIPTION_FAILURE
+    state ? DESCRIPTION_SUCCESS : DESCRIPTION_FAILURE,
   );
 }
 
-async function setStatus(pullRequest, state, description) {
+export async function setStatus(pullRequest, state, description) {
   core.info(`Setting status ${state}..`);
   const createStatus = JSON.parse(
-    core.getInput("create_status", { required: true })
+    core.getInput("create_status", { required: true }),
   );
 
   if (!createStatus) {
@@ -281,7 +281,7 @@ async function setStatus(pullRequest, state, description) {
   });
 }
 
-async function release(pullRequest) {
+export async function release(pullRequest) {
   core.info(`Releasing ${pullRequest.merge_commit_sha}..`);
   const tag = getTagName(pullRequest);
   const isPrerelease =
@@ -299,7 +299,7 @@ async function release(pullRequest) {
   });
 }
 
-async function hasPreviouslyApproved(pullRequest) {
+export async function hasPreviouslyApproved(pullRequest) {
   const userResponse = await client.rest.users.getAuthenticated();
   const response = await client.rest.pulls.listReviews({
     pull_number: pullRequest.number,
@@ -311,27 +311,9 @@ async function hasPreviouslyApproved(pullRequest) {
   return lastReview ? lastReview.state === "APPROVED" : false;
 }
 
-class ValidationError extends Error {
+export class ValidationError extends Error {
   constructor(message) {
     super(message);
     this.name = this.constructor.name;
   }
 }
-
-module.exports = {
-  action,
-  hasPreviouslyApproved,
-  validate,
-  validateTitle,
-  validateBody,
-  validateBranches,
-  validateRelease,
-  getTagName,
-  getReviewApproveEvent,
-  getReviewFailEvent,
-  addLabel,
-  review,
-  release,
-  setStatus,
-  ValidationError,
-};
