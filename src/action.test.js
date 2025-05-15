@@ -1,6 +1,8 @@
-const nock = require("nock");
-const moment = require("moment");
-const path = require("path");
+import { test, beforeEach } from "node:test";
+import assert from "node:assert/strict";
+
+import nock from "nock";
+import moment from "moment";
 
 const owner = "someowner";
 const repo = "somerepo";
@@ -13,7 +15,8 @@ beforeEach(() => {
 });
 
 test("validate", async () => {
-  const { validate } = require("./action");
+  const { validate, ValidationError } = await import("./action.js");
+
   process.env["INPUT_APPROVE_RELEASES"] = "true";
   process.env["INPUT_RELEASE_PATTERN"] =
     "^(?<year>[0-9]{4})\\.(?<month>[0-9]{2})\\.(?<day>[0-9]{2})-\\d$";
@@ -55,14 +58,16 @@ test("validate", async () => {
     ]);
 
   const validatedPR = await validate(pullRequest);
-  expect(validatedPR).toBe(pullRequest);
-  await expect(validate({ ...pullRequest, title: "badtitle" })).rejects.toThrow(
+  assert.equal(validatedPR, pullRequest);
+  await assert.rejects(
+    validate({ ...pullRequest, title: "badtitle" }),
+    ValidationError,
     /Invalid release title/
   );
 });
 
 test("validateSkipping", async () => {
-  const { validate } = require("./action");
+  const { validate, ValidationError } = await import("./action.js");
   process.env["INPUT_APPROVE_RELEASES"] = "true";
   process.env["INPUT_RELEASE_PATTERN"] =
     "^(?<year>[0-9]{4})\\.(?<month>[0-9]{2})\\.(?<day>[0-9]{2})-\\d$";
@@ -105,33 +110,34 @@ test("validateSkipping", async () => {
     ]);
 
   const validatedPR = await validate(pullRequest);
-  expect(validatedPR).toBe(pullRequest);
-  await expect(validate({ ...pullRequest, title: "badtitle" })).rejects.toThrow(
-    /Invalid release title/
+  assert.equal(validatedPR, pullRequest);
+  await assert.rejects(
+    validate({ ...pullRequest, title: "badtitle" }),
+    ValidationError
   );
   scope.done();
 });
 
-test("getReviewApproveEvent", () => {
-  const { getReviewApproveEvent } = require("./action");
+test("getReviewApproveEvent", async () => {
+  const { getReviewApproveEvent } = await import("./action.js");
 
   process.env["INPUT_APPROVE_RELEASES"] = "true";
-  expect(getReviewApproveEvent()).toBe("APPROVE");
+  assert.equal(getReviewApproveEvent(), "APPROVE");
   process.env["INPUT_APPROVE_RELEASES"] = "false";
-  expect(getReviewApproveEvent()).toBe("COMMENT");
+  assert.equal(getReviewApproveEvent(), "COMMENT");
 });
 
-test("getReviewFailEvent", () => {
-  const { getReviewFailEvent } = require("./action");
+test("getReviewFailEvent", async () => {
+  const { getReviewFailEvent } = await import("./action.js");
 
   process.env["INPUT_APPROVE_RELEASES"] = "true";
-  expect(getReviewFailEvent()).toBe("REQUEST_CHANGES");
+  assert.equal(getReviewFailEvent(), "REQUEST_CHANGES");
   process.env["INPUT_APPROVE_RELEASES"] = "false";
-  expect(getReviewFailEvent()).toBe("COMMENT");
+  assert.equal(getReviewFailEvent(), "COMMENT");
 });
 
 test("hasPreviouslyApproved", async () => {
-  const { hasPreviouslyApproved } = require("./action");
+  const { hasPreviouslyApproved } = await import("./action.js");
   const prNumber = "1";
   const ciUser = "our-ci-user";
   const pullRequest = { number: prNumber };
@@ -144,7 +150,7 @@ test("hasPreviouslyApproved", async () => {
       { user: { login: "someone-else" }, state: "APPROVED" },
     ]);
 
-  expect(await hasPreviouslyApproved(pullRequest)).toBe(false);
+  assert(!(await hasPreviouslyApproved(pullRequest)));
   scope.done();
 
   const nextScope = nock("https://api.github.com")
@@ -157,42 +163,45 @@ test("hasPreviouslyApproved", async () => {
       { user: { login: ciUser }, state: "APPROVED" },
     ]);
 
-  expect(await hasPreviouslyApproved(pullRequest)).toBe(true);
+  assert(await hasPreviouslyApproved(pullRequest));
   nextScope.done();
 });
 
-test("getTagName", () => {
-  const { getTagName } = require("./action");
+test("getTagName", async () => {
+  const { getTagName } = await import("./action.js");
 
   process.env["INPUT_TAG_PREFIX"] = "";
-  expect(getTagName({ title: "hejhej", number: 32 })).toBe("hejhej");
+  assert.equal(getTagName({ title: "hejhej", number: 32 }), "hejhej");
 
   process.env["INPUT_TAG_PREFIX"] = "release/";
-  expect(getTagName({ title: "hejhej", number: 32 })).toBe("release/hejhej");
+  assert.equal(getTagName({ title: "hejhej", number: 32 }), "release/hejhej");
 
   process.env["INPUT_TAG_TRANSFORMER"] = "dashes-and-number";
-  expect(getTagName({ title: "This is a PR---", number: 32 })).toBe(
+  assert.equal(
+    getTagName({ title: "This is a PR---", number: 32 }),
     "release/#32-this-is-a-pr"
   );
 
   process.env["INPUT_TAG_TRANSFORMER"] = "dashes-and-number";
-  expect(getTagName({ title: " This is a PR ", number: 32 })).toBe(
+  assert.equal(
+    getTagName({ title: " This is a PR ", number: 32 }),
     "release/#32-this-is-a-pr"
   );
 });
 
-test("getTagName errors for bad transformers", () => {
-  const { getTagName } = require("./action");
+test("getTagName errors for bad transformers", async () => {
+  const { getTagName } = await import("./action.js");
 
   process.env["INPUT_TAG_PREFIX"] = "release/";
   process.env["INPUT_TAG_TRANSFORMER"] = "bad transformer";
-  expect(() => getTagName({ title: "hejhej", number: 32 })).toThrow(
+  assert.throws(
+    () => getTagName({ title: "hejhej", number: 32 }),
     /Invalid transformer: bad transformer/
   );
 });
 
 test("addLabel", async () => {
-  const { addLabel } = require("./action");
+  const { addLabel } = await import("./action.js");
   const releaseLabel = "Release";
   process.env["INPUT_RELEASE_LABEL"] = releaseLabel;
   const prNumber = "5";
@@ -209,7 +218,7 @@ test("addLabel", async () => {
 });
 
 test("review", async () => {
-  const { review } = require("./action");
+  const { review } = await import("./action.js");
 
   process.env["INPUT_CREATE_STATUS"] = "true";
   process.env["INPUT_STATUS_NAME"] = "Monkey Release";
@@ -224,7 +233,7 @@ test("review", async () => {
 });
 
 test("release", async () => {
-  const { release } = require("./action");
+  const { release } = await import("./action.js");
 
   process.env["INPUT_TAG_PREFIX"] = "release/";
   nock("https://api.github.com")
@@ -237,8 +246,8 @@ test("release", async () => {
   });
 });
 
-test("validateTitle", () => {
-  const { validateTitle } = require("./action");
+test("validateTitle", async () => {
+  const { validateTitle } = await import("./action.js");
 
   process.env["INPUT_RELEASE_PATTERN"] =
     "^(?<year>[0-9]{4})\\.(?<month>[0-9]{2})\\.(?<day>[0-9]{2})-\\d$";
@@ -248,72 +257,72 @@ test("validateTitle", () => {
   validateTitle({ title: currentDate });
 
   // Invalid
-  expect(() => {
+  assert.throws(() => {
     validateTitle({ title: "IAMINVALID" });
-  }).toThrow(/Invalid release title/);
+  }, /Invalid release title/);
 
   // Invalid year
-  expect(() => {
+  assert.throws(() => {
     validateTitle({ title: "2001.09.28-1" });
-  }).toThrow(/is not a valid year/);
+  }, /is not a valid year/);
 
   // Invalid month
   const invalidMonth = moment.utc(new Date()).format("YYYY.13.DD-1");
-  expect(() => {
+  assert.throws(() => {
     validateTitle({ title: invalidMonth });
-  }).toThrow(/is not a valid month/);
+  }, /is not a valid month/);
 
   // Invalid day
   const invalidDay = moment(new Date()).format("YYYY.MM.32-1");
-  expect(() => {
+  assert.throws(() => {
     validateTitle({ title: invalidDay });
-  }).toThrow(/is not a valid day/);
+  }, /is not a valid day/);
 
   // Only year
   process.env["INPUT_RELEASE_PATTERN"] = "^(?<year>[0-9]{4})\\-\\d$";
   validateTitle({ title: moment.utc(new Date()).format("YYYY-1") });
-  expect(() => {
+  assert.throws(() => {
     validateTitle({ title: "2001-1" });
-  }).toThrow(/is not a valid year/);
+  }, /is not a valid year/);
 
   // Only year and month
   process.env["INPUT_RELEASE_PATTERN"] =
     "^(?<year>[0-9]{4})\\.(?<month>[0-9]{2})\\-\\d$";
   validateTitle({ title: moment.utc(new Date()).format("YYYY.MM-1") });
-  expect(() => {
+  assert.throws(() => {
     validateTitle({ title: moment.utc(new Date()).format("YYYY.13-1") });
-  }).toThrow(/is not a valid month/);
+  }, /is not a valid month/);
 
   // Non Calver
   process.env["INPUT_RELEASE_PATTERN"] = "^release$";
   validateTitle({ title: "release" });
-  expect(() => {
+  assert.throws(() => {
     validateTitle({ title: "IAMINVALID" });
-  }).toThrow(/Invalid release title/);
+  }, /Invalid release title/);
 
   // Valid as short year
   process.env["INPUT_RELEASE_PATTERN"] =
     "^(?<year>[0-9]{2})\\.(?<month>[0-9]{2})\\.\\d$";
   validateTitle({ title: moment.utc(new Date()).format("YY.MM.1") });
-  expect(() => {
+  assert.throws(() => {
     validateTitle({ title: "20.12.1" });
-  }).toThrow(/is not a valid year/);
+  }, /is not a valid year/);
 });
 
-test("validateBody", () => {
-  const { validateBody } = require("./action");
+test("validateBody", async () => {
+  const { validateBody } = await import("./action.js");
 
   // Valid body
   validateBody({ body: "A body" });
 
   // Invalid body
-  expect(() => {
+  assert.throws(() => {
     validateBody({ title: null });
-  }).toThrow(/Missing description/);
+  }, /Missing description/);
 });
 
-test("validateBranches", () => {
-  const { validateBranches } = require("./action");
+test("validateBranches", async () => {
+  const { validateBranches } = await import("./action.js");
 
   process.env["INPUT_BASE_BRANCH"] = "master";
   process.env["INPUT_HEAD_BRANCH"] = "dev";
@@ -322,25 +331,70 @@ test("validateBranches", () => {
   validateBranches({ base: { ref: "master" }, head: { ref: "dev" } });
 
   // Invalid head
-  expect(() => {
+  assert.throws(() => {
     validateBranches({
       base: { ref: "master" },
       head: { ref: "someweirdbranch" },
     });
-    approve_releases;
-  }).toThrow(/Releases can only be made from/);
+  }, /Releases can only be made from/);
 
   // Invalid body
-  expect(() => {
+  assert.throws(() => {
     validateBranches({
       base: { ref: "someweirdbranch" },
       head: { ref: "dev" },
     });
-  }).toThrow(/Releases can only be made against/);
+  }, /Releases can only be made against/);
+
+  // Test wildcard
+  process.env["INPUT_HEAD_BRANCH"] = "*";
+
+  // Valid branch
+  validateBranches({ base: { ref: "master" }, head: { ref: "dev" } });
+
+  // Weird branch
+  validateBranches({
+    base: { ref: "master" },
+    head: { ref: "someweirdbranch" },
+  });
+
+  process.env["INPUT_HEAD_BRANCH"] = "hotfix/*";
+
+  // Valid branch
+  validateBranches({
+    base: { ref: "master" },
+    head: { ref: "hotfix/monkey-business" },
+  });
+
+  // Invalid head
+  assert.throws(() => {
+    validateBranches({
+      base: { ref: "master" },
+      head: { ref: "someweirdbranch" },
+    });
+  }, /Releases can only be made from/);
+
+  // Test multiple head branches
+  process.env["INPUT_HEAD_BRANCH"] = ["dev", "hotfix/*"];
+
+  // Valid branch
+  validateBranches({ base: { ref: "master" }, head: { ref: "dev" } });
+  validateBranches({
+    base: { ref: "master" },
+    head: { ref: "hotfix/monkey-business" },
+  });
+
+  // Invalid head
+  assert.throws(() => {
+    validateBranches({
+      base: { ref: "master" },
+      head: { ref: "someweirdbranch" },
+    });
+  }, /Releases can only be made from/);
 });
 
 test("validateRelease", async () => {
-  const { validateRelease } = require("./action");
+  const { validateRelease } = await import("./action.js");
 
   process.env["INPUT_TAG_PREFIX"] = "release/";
 
@@ -356,7 +410,8 @@ test("validateRelease", async () => {
   nock("https://api.github.com")
     .get(`/repos/${owner}/${repo}/releases/tags/${encodeURIComponent(tag)}`)
     .reply(200);
-  await expect(validateRelease({ title: "hejhej" })).rejects.toThrow(
+  await assert.rejects(
+    validateRelease({ title: "hejhej" }),
     /Release tag already exists/
   );
 
@@ -364,11 +419,11 @@ test("validateRelease", async () => {
   nock("https://api.github.com")
     .get(`/repos/${owner}/${repo}/releases/tags/${encodeURIComponent(tag)}`)
     .reply(500);
-  await expect(validateRelease({ title: "hejhej" })).rejects.toThrow(Error);
+  await assert.rejects(validateRelease({ title: "hejhej" }), Error);
 });
 
 test("setStatus", async () => {
-  const { setStatus } = require("./action");
+  const { setStatus } = await import("./action.js");
 
   process.env["INPUT_CREATE_STATUS"] = "true";
   process.env["INPUT_STATUS_NAME"] = "Monkey Release";
